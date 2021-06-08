@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import argparse
-
+import pickle
 def center(z):
     mask1 = (z==-1).sum(axis=0)
     mask2 = (z==-1).sum(axis=1)
@@ -58,9 +58,11 @@ table['thi'] = digits
 
 interface = {}  #np.zeros((max_t-t0+1,args.discretization))
 for t in range(t0, max_t+1):
-    print(t)
+    if(t % 2000 == 0):
+        print("Status: %2.1f%%" % (100*(t-t0)/(max_t+1-t0)))
     z = table[table['t'] <= t]
     rs = z.groupby('thi')['R'].max()
     interface[t] = np.zeros(args.discretization)
     interface[t][rs.index] = rs.values
-np.save(filename, interface)
+with open(filename, 'wb') as f:
+    pickle.dump(interface,f)
