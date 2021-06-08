@@ -28,7 +28,7 @@ parser.add_argument('--initial_time',type=int, default=0)
 args = parser.parse_args()
 filename = args.input
 out_filename = args.output
-n_bins = args.discretization+1
+n_bins = args.discretization
 t0 = args.initial_time
 
 data = pd.read_csv(filename, header=None).values
@@ -56,13 +56,23 @@ digits = np.digitize(table['th'], bins)-1
 table['thi'] = digits
 
 
+min_idx = np.min(digits)
+max_idx = np.max(digits)
+
+hard_fix = max_idx == n_bins-2
+
+if(hard_fix):
+    print('Hard fix for boundary.')
+
 interface = {}  #np.zeros((max_t-t0+1,args.discretization))
 for t in range(t0, max_t+1):
     if(t % 2000 == 0):
         print("Status: %2.1f%%" % (100*(t-t0)/(max_t+1-t0)))
     z = table[table['t'] <= t]
     rs = z.groupby('thi')['R'].max()
-    interface[t] = np.zeros(args.discretization)
+    interface[t] = np.zeros(n_bins)
     interface[t][rs.index] = rs.values
-with open(filename, 'wb') as f:
+    if(hard_fix):
+        interface[t][-1] = interface[t][0] #ensure pbc
+with open(out_filename, 'wb') as f:
     pickle.dump(interface,f)
