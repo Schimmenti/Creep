@@ -64,10 +64,27 @@ hard_fix = max_idx == n_bins-2
 if(hard_fix):
     print('Hard fix for boundary.')
 
+x_dict = {}
+y_dict = {}
+t_dict = {}
+
+for t in range(0,data.max()+1):
+    if(t % 2000 == 0):
+        print("Status: %2.1f%%" % (100*(t-t0)/(max_t+1-t0)))
+    positions = np.argwhere(data==t)
+    if(len(positions)>0):
+        x_dict[t] = positions[:,0]
+        y_dict[t] = positions[:,1]
+        t_dict[t] = t
+        
+    
+
+
 interface = {}  #np.zeros((max_t-t0+1,args.discretization))
 for t in range(t0, max_t+1):
     if(t % 2000 == 0):
         print("Status: %2.1f%%" % (100*(t-t0)/(max_t+1-t0)))
+
     z = table[table['t'] <= t]
     rs = z.groupby('thi')['R'].max()
     interface[t] = np.zeros(n_bins)
@@ -75,4 +92,4 @@ for t in range(t0, max_t+1):
     if(hard_fix):
         interface[t][-1] = interface[t][0] #ensure pbc
 with open(out_filename, 'wb') as f:
-    pickle.dump(interface,f)
+    pickle.dump([interface, x_dict, y_dict, t_dict],f)
